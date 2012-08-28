@@ -1,0 +1,4 @@
+Sleepsort in Go
+===============
+
+An implementation of the sleepsort algorithm, as specified here: https://dis.4chan.org/read/prog/1295544154
