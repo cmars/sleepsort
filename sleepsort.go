@@ -33,20 +33,14 @@ func SortSlice(in []int) {
 // Sort a channel of ints.
 func SortChan(in chan int) (out chan int) {
 	out = make(chan int)
-	mutex := new(sync.Mutex)
-	cond := sync.NewCond(mutex)
-	ready := false
+	ready := make(chan struct{})
 	var running sync.WaitGroup
 	go func(){
 		for n := range in {
 			running.Add(1)
 			send := n
 			go func(){
-				cond.L.Lock()
-				for !ready {
-					cond.Wait()
-				}
-				cond.L.Unlock()
+				<-ready
 				time.Sleep(time.Duration(send) * SLEEPSORT_DURATION)
 				out <- send
 				running.Done()
@@ -56,10 +50,7 @@ func SortChan(in chan int) (out chan int) {
 			running.Wait()
 			close(out)
 		}()
-		cond.L.Lock()
-		ready = true
-		cond.Broadcast()
-		cond.L.Unlock()
+		close(ready)
 	}()
 	return out
 }
